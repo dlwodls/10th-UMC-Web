@@ -1,5 +1,5 @@
 import './App.css'
-import Todo from './components/Todo';
+import ContextPage from './ContextPage.tsx';
 
 
 
@@ -10,7 +10,11 @@ interface Task {
 }
 
 function App() {
-  return <Todo />;
+  return (
+    <>
+      <ContextPage />
+    </>
+  )
 }
 
 export default App
