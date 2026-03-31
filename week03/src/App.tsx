@@ -1,10 +1,12 @@
-import './App.css'
+import MoviesPage from './pages/movies';
 
 function App() {
   return (
-    <>
-    </>
-  )
+    <div>
+      <h1>🎬 영화 목록</h1>
+      <MoviesPage />
+    </div>
+  );
 }
 
-export default App
+export default App;
