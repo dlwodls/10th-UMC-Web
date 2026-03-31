@@ -1,4 +1,4 @@
-import MoviesPage from './pages/movies';
+import MoviesPage from "./pages/MoviePage";
 
 function App() {
   return (
