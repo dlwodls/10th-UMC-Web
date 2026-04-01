@@ -1,9 +1,9 @@
 import MoviesPage from "./pages/MoviePage";
-import { createBrowserRouter, Router } from "react-router-dom";
 import HomePage from "./pages/HomePage";
 import NotFoundPage from "./pages/NotFoundPage";
-import { RouterProvider } from "react-router-dom";
 import MovieDetailPage from "./pages/MovieDetailPage";
+import { RouterProvider } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 
 const router = createBrowserRouter([
   {
@@ -12,11 +12,11 @@ const router = createBrowserRouter([
     errorElement: <NotFoundPage />,
     children: [
       {
-      path: 'movies/:category',
-      element: <MoviesPage />,
+        path: 'movies/:category',
+        element: <MoviesPage />,
       },
       {
-        path: 'movies/:category/:movieId',
+        path: 'movies/detail/:movieId',
         element: <MovieDetailPage />
       }
     ]
