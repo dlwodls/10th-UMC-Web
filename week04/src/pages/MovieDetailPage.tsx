@@ -1,50 +1,38 @@
-import { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import { useParams, useNavigate } from 'react-router-dom';
 import type { MovieDetail, Credits } from '../types/movie';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import { useCustomFetch } from '../hooks/useCustomFetch';
 
-const API_TOKEN = 'eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmODQ2ZDIwMmIwMDQ5MzcyYzkxYTlmODFjMjZlYTU5YSIsIm5iZiI6MTc3NDk4MDk3OS4wNjQsInN1YiI6IjY5Y2MwZjczY2IyYjRhMzA5OWNhNDE5NSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.qOvZ8YutakIzebPTpbjZHWTvV3u8cnXy_ZKt3yQSb88';
 const BASE_URL = 'https://api.themoviedb.org/3';
-const IMG_BASE = 'https://image.tmdb.org/t/p';
-
-const axiosConfig = {
-    headers: { Authorization: `Bearer ${API_TOKEN}` },
-};
+const IMG_BASE  = 'https://image.tmdb.org/t/p';
 
 export default function MovieDetailPage() {
     const { movieId } = useParams<{ movieId: string }>();
-    const [movie, setMovie] = useState<MovieDetail | null>(null);
-    const [credits, setCredits] = useState<Credits | null>(null);
-    const [isPending, setIsPending] = useState(false);
-    const [isError, setIsError] = useState(false);
+    const navigate = useNavigate();
 
-    useEffect(() => {
-        const fetchDetail = async () => {
-            setIsPending(true);
-            setIsError(false);
-            try {
-                const [movieRes, creditsRes] = await Promise.all([
-                    axios.get<MovieDetail>(
-                        `${BASE_URL}/movie/${movieId}?language=ko-KR`,
-                        axiosConfig
-                    ),
-                    axios.get<Credits>(
-                        `${BASE_URL}/movie/${movieId}/credits?language=ko-KR`,
-                        axiosConfig
-                    ),
-                ]);
-                setMovie(movieRes.data);
-                setCredits(creditsRes.data);
-            } catch {
-                setIsError(true);
-            } finally {
-                setIsPending(false);
-            }
-        };
+    // 영화 상세 정보 요청 (useCustomFetch 훅 사용)
+    const {
+        data: movie,
+        isPending: moviePending,
+        isError: movieError,
+    } = useCustomFetch<MovieDetail>(
+        `${BASE_URL}/movie/${movieId}?language=ko-KR`
+    );
 
-        fetchDetail();
-    }, [movieId]);
+    // 감독/출연진 정보 요청 (useCustomFetch 훅 사용)
+    const {
+        data: credits,
+        isPending: creditsPending,
+        isError: creditsError,
+    } = useCustomFetch<Credits>(
+        `${BASE_URL}/movie/${movieId}/credits?language=ko-KR`
+    );
+
+    // 두 요청 중 하나라도 로딩 중이면 스피너 표시
+    const isPending = moviePending || creditsPending;
+
+    // 두 요청 중 하나라도 에러면 에러 표시
+    const isError = movieError || creditsError;
 
     if (isPending) {
         return (
@@ -54,17 +42,26 @@ export default function MovieDetailPage() {
         );
     }
 
+    // API 에러 발생 시 에러 UI 표시
     if (isError || !movie) {
         return (
-            <div className="flex items-center justify-center h-dvh">
-                <span className="text-red-500 text-2xl">에러가 발생했습니다.</span>
+            <div className="flex flex-col items-center justify-center h-dvh gap-4">
+                <span className="text-yellow-400 text-6xl">⚠️</span>
+                <p className="text-black text-xl font-semibold">에러가 발생했습니다. 이용에 불편을 드려 죄송합니다.</p>
+                <button
+                    className="mt-2 px-6 py-3 bg-[#f3c4c4] text-black rounded-lg hover:bg-[#c4dab1] transition-all duration-200 cursor-pointer"
+                    onClick={() => navigate('/')}
+                >
+                    홈으로 돌아가기
+                </button>
             </div>
         );
     }
 
+    // 감독 필터링 + 출연진 상위 20명 추출 후 합치기
     const directors = credits?.crew.filter((c) => c.job === 'Director') ?? [];
-    const cast = credits?.cast.slice(0, 20) ?? [];
-    const people = [...directors, ...cast];
+    const cast      = credits?.cast.slice(0, 20) ?? [];
+    const people    = [...directors, ...cast];
 
     return (
         <div className="text-white bg-black min-h-screen p-6">
@@ -72,7 +69,7 @@ export default function MovieDetailPage() {
             {/* 영화 정보 + 이미지 */}
             <div className="flex flex-col md:flex-row gap-6 mb-10">
 
-                {/* 텍스트 정보(왼쪽) */}
+                {/* 텍스트 정보 (왼쪽) */}
                 <div className="flex-1 flex flex-col justify-center">
                     <h1 className="text-3xl font-bold mb-3">{movie.title}</h1>
                     <p className="text-gray-300">평균 {movie.vote_average.toFixed(1)}</p>
@@ -86,7 +83,7 @@ export default function MovieDetailPage() {
                     </p>
                 </div>
 
-                {/* 배경 이미지(오른쪽) */}
+                {/* 배경 이미지 (오른쪽) */}
                 <div className="flex-1">
                     <img
                         src={`${IMG_BASE}/w780${movie.backdrop_path}`}
@@ -104,7 +101,10 @@ export default function MovieDetailPage() {
                 <h2 className="text-xl font-bold mb-6">감독/출연</h2>
                 <div className="flex gap-6 overflow-x-auto pb-4">
                     {people.map((person, index) => (
-                        <div key={`${person.id}-${index}`} className="flex-shrink-0 w-24 text-center">
+                        <div
+                            key={`${person.id}-${index}`}
+                            className="flex-shrink-0 w-24 text-center"
+                        >
                             <img
                                 src={
                                     person.profile_path
@@ -115,6 +115,7 @@ export default function MovieDetailPage() {
                                 className="w-20 h-20 rounded-full object-cover mx-auto mb-2 bg-gray-700"
                             />
                             <p className="text-sm font-semibold">{person.name}</p>
+                            {/* 감독이면 job, 배우면 character 표시 */}
                             <p className="text-xs text-gray-400 mt-1">
                                 {'character' in person ? person.character : person.job}
                             </p>

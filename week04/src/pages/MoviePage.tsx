@@ -1,49 +1,45 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import type { Movie, MovieResponse } from '../types/movie';
-import MovieCard from '../components/MovieCard';
-import axios from 'axios';
 import { LoadingSpinner } from '../components/LoadingSpinner';
-import { useParams } from 'react-router-dom';
+import { useCustomFetch } from '../hooks/useCustomFetch';
+import MovieCard from '../components/MovieCard';
+
 
 export default function MoviePage() {
-    const [movies, setMovies] = useState<Movie[]>([]);
-    const [isPending, setIsPending] = useState(false); // 로딩 상태
-    const [isError, setIsError] = useState(false);     // 에러 상태
-    const [page, setPage] = useState(1);               // 페이지 처리
+    const navigate = useNavigate();
+
+
+
+    const [page, setPage] = useState(1);     // 페이지 처리
     const { category } = useParams<{
         category: string;
     }>();
 
-    useEffect(() => {
-        const fetchMovies = async () => {
-            setIsPending(true);
-            try {
-                const { data } = await axios.get<MovieResponse>(
-                    `https://api.themoviedb.org/3/movie/${category}?language=ko-KR&page=${page}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiJmODQ2ZDIwMmIwMDQ5MzcyYzkxYTlmODFjMjZlYTU5YSIsIm5iZiI6MTc3NDk4MDk3OS4wNjQsInN1YiI6IjY5Y2MwZjczY2IyYjRhMzA5OWNhNDE5NSIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.qOvZ8YutakIzebPTpbjZHWTvV3u8cnXy_ZKt3yQSb88`,
-                        },
-                    }
-                );
-                
-                setMovies(data.results);
-            } catch{
-                setIsError(true);
-            } finally {
-                setIsPending(false);
-            }
-        };
+    // useCustomFetch 훅으로 데이터, 로딩, 에러 상태를 한번에 관리
+    // page나 category가 바뀌면 URL이 바뀌므로 훅이 자동으로 재요청
+    const { data, isPending, isError } = useCustomFetch<MovieResponse>(
+        `https://api.themoviedb.org/3/movie/${category}?language=ko-KR&page=${page}`
+    );
 
-        fetchMovies();
-    }, [page, category]);
+    // data가 null인 경우(초기 상태) 빈 배열로 초기화
+    const movies: Movie[] = data?.results ?? [];
 
+
+    // API 에러 발생 시 에러 UI 표시
     if (isError) {
         return (
-            <div>
-                <span className='text-red-500 text-2xl'>에러가 발생했습니다.</span>
+            <div className="flex flex-col items-center justify-center h-dvh gap-4">
+                <span className="text-yellow-400 text-6xl">⚠️</span>
+                <p className="text-white text-xl font-semibold">에러가 발생했습니다. 이용에 불편을 드려 죄송합니다.</p>
+                <button
+                    className="mt-2 px-6 py-3 bg-[#dda5e3] text-white rounded-lg hover:bg-[#b2dab1] transition-all duration-200 cursor-pointer"
+                    onClick={() => navigate('/')}
+                >
+                    홈으로 돌아가기
+                </button>
             </div>
-        )
+        );
     }
 
     return (
