@@ -1,4 +1,4 @@
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import type { MovieDetail, Credits } from '../types/movie';
 import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useCustomFetch } from '../hooks/useCustomFetch';
@@ -8,9 +8,9 @@ const IMG_BASE  = 'https://image.tmdb.org/t/p';
 
 export default function MovieDetailPage() {
     const { movieId } = useParams<{ movieId: string }>();
-    const navigate = useNavigate();
 
-    // 영화 상세 정보 요청 (useCustomFetch 훅 사용)
+    // 영화 상세 정보 요청
+    // useCustomFetch 훅 사용
     const {
         data: movie,
         isPending: moviePending,
@@ -19,7 +19,8 @@ export default function MovieDetailPage() {
         `${BASE_URL}/movie/${movieId}?language=ko-KR`
     );
 
-    // 감독/출연진 정보 요청 (useCustomFetch 훅 사용)
+    // 감독/출연진 정보 요청
+    // useCustomFetch 훅 사용
     const {
         data: credits,
         isPending: creditsPending,
@@ -42,18 +43,10 @@ export default function MovieDetailPage() {
         );
     }
 
-    // API 에러 발생 시 에러 UI 표시
     if (isError || !movie) {
         return (
-            <div className="flex flex-col items-center justify-center h-dvh gap-4">
-                <span className="text-yellow-400 text-6xl">⚠️</span>
-                <p className="text-black text-xl font-semibold">에러가 발생했습니다. 이용에 불편을 드려 죄송합니다.</p>
-                <button
-                    className="mt-2 px-6 py-3 bg-[#f3c4c4] text-black rounded-lg hover:bg-[#c4dab1] transition-all duration-200 cursor-pointer"
-                    onClick={() => navigate('/')}
-                >
-                    홈으로 돌아가기
-                </button>
+            <div className="flex items-center justify-center h-dvh">
+                <span className="text-red-500 text-2xl">에러가 발생했습니다.</span>
             </div>
         );
     }

@@ -5,26 +5,31 @@ import { LoadingSpinner } from '../components/LoadingSpinner';
 import { useCustomFetch } from '../hooks/useCustomFetch';
 import MovieCard from '../components/MovieCard';
 
+const BASE_URL = 'https://api.themoviedb.org/3';
+
+// 카테고리
+const CATEGORY_LABELS: Record<string, string> = {
+    now_playing: '- 현재 상영중 -',
+    popular:     '- 인기 영화 -',
+    top_rated:   '- 최고 평점 -',
+    upcoming:    '- 개봉 예정 -',
+};
 
 export default function MoviePage() {
     const navigate = useNavigate();
-
-
-
-    const [page, setPage] = useState(1);     // 페이지 처리
-    const { category } = useParams<{
-        category: string;
-    }>();
+    const [page, setPage] = useState(1);
+    const { category } = useParams<{ category: string }>();
 
     // useCustomFetch 훅으로 데이터, 로딩, 에러 상태를 한번에 관리
-    // page나 category가 바뀌면 URL이 바뀌므로 훅이 자동으로 재요청
     const { data, isPending, isError } = useCustomFetch<MovieResponse>(
-        `https://api.themoviedb.org/3/movie/${category}?language=ko-KR&page=${page}`
+        `${BASE_URL}/movie/${category}?language=ko-KR&page=${page}`
     );
 
     // data가 null인 경우(초기 상태) 빈 배열로 초기화
     const movies: Movie[] = data?.results ?? [];
 
+    // 카테고리 한국어 제목 (매핑 없으면 영문 그대로 표시)
+    const categoryLabel = CATEGORY_LABELS[category ?? ''] ?? category;
 
     // API 에러 발생 시 에러 UI 표시
     if (isError) {
@@ -43,38 +48,54 @@ export default function MoviePage() {
     }
 
     return (
-        <>
-            <div className='flex items-center justify-center gap-6 mt-5'>
-                <button 
-                    className='bg-[#dda5e3] text-white px-6 py-3 rounded-lg shadow-md
-                    hover:bg-[#b2dab1] transition-all duration-200 disabled:bg-gray-300
-                    cursor-pointer disabled:cursor-not-allowed'
-                    disabled={page === 1} 
-                    onClick={() => setPage((prev) => prev - 1)}>
-                    {'<'}</button>
-                <span>{page} 페이지</span>
-                <button 
-                    className='bg-[#dda5e3] text-white px-6 py-3 rounded-lg shadow-md
-                    hover:bg-[#b2dab1] transition-all duration-200 disabled:bg-gray-300
-                    cursor-pointer disabled:cursor-not-allowed'
-                    onClick={() => setPage((prev) => prev + 1)}>
-                    {'>'}</button>
-            </div>
+        <div className="min-h-screen bg-[#a6abb5] text-white">
 
+            {/* 카테고리 제목 */}
+            <h1 className="text-2xl text-[#222435] text-center font-bold px-10 pt-8 pb-2">{categoryLabel}</h1>
+
+            {/* 로딩 스피너 */}
             {isPending && (
-                <div className='flex items-center justify-center h-dvh'>
+                <div className="flex items-center justify-center h-dvh">
                     <LoadingSpinner />
                 </div>
             )}
 
+            {/* 영화 카드 목록 */}
             {!isPending && (
-                <div className='p-10 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4
-                lg:grid-cols-5 xl:grid-cols-6'>
+                <div className="p-10 grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
                     {movies.map((movie) => (
                         <MovieCard key={movie.id} movie={movie} />
                     ))}
                 </div>
             )}
-        </>
+
+            {/* 페이지네이션 (하단) */}
+            <div className="flex items-center justify-center gap-6 py-8">
+                {/* page가 1이면 이전 버튼 자리를 빈 공간으로 유지 */}
+                {page > 1 ? (
+                    <button
+                        className="px-5 py-2 bg-gray-400 text-white rounded-lg shadow-md
+                        hover:bg-[#a3bac8] transition-all duration-200 cursor-pointer text-lg"
+                        onClick={() => setPage((prev) => prev - 1)}
+                    >
+                        «
+                    </button>
+                ) : (
+                    <div className="px-5 py-2 text-lg invisible">«</div>
+                )}
+                <span className="text-lg font-semibold">
+                    {page}
+                </span>
+                <button
+                    className="px-5 py-2 bg-gray-400 text-white rounded-lg shadow-md
+                    hover:bg-[#a3bac8] transition-all duration-200
+                    cursor-pointer text-lg"
+                    onClick={() => setPage((prev) => prev + 1)}
+                >
+                    »
+                </button>
+            </div>
+
+        </div>
     );
 }
