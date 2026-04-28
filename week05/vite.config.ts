@@ -1,10 +1,8 @@
 import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+// https://vite.dev/config/
 export default defineConfig({
-  plugins: [
-    tailwindcss(),
-  ],
+  plugins: [react(), tailwindcss()],
 })
-
-// tailwindcss가 vite 빌드 프로세스에 자동으로 통합

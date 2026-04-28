@@ -1,30 +1,62 @@
-import MoviesPage from "./pages/MoviePage";
-import HomePage from "./pages/HomePage";
-import NotFoundPage from "./pages/NotFoundPage";
-import MovieDetailPage from "./pages/MovieDetailPage";
-import { RouterProvider } from "react-router-dom";
+import { RouterProvider, type RouteObject } from "react-router-dom";
 import { createBrowserRouter } from "react-router-dom";
+import HomePage from "./pages/HomePage";
+import LoginPage from "./pages/LoginPage";
+import SignupPage from "./pages/SignupPage";
+import HomeLayout from "./layouts/HomeLayout";
+import ProtectedLayout from "./layouts/ProtectedLayout";
+import MyPage from "./pages/MyPage";
+import NotFoundPage from "./pages/NotFoundPage";
+import { AuthProvider } from "./context/AuthContext";
 
-const router = createBrowserRouter([
+// 1. 홈페이지
+// 2. 로그인 페이지
+// 3. 회원가입 페이지
+
+// publicRoutes: 인증 없이 접근 가능한 라우트
+const publicRoutes: RouteObject[] = [
   {
-    path: '/',
-    element: <HomePage />,
+    path: "/",
+    element: <HomeLayout />,
     errorElement: <NotFoundPage />,
     children: [
       {
-        path: 'movies/:category',
-        element: <MoviesPage />,
+        index: true,
+        element: <HomePage />
       },
       {
-        path: 'movies/detail/:movieId',
-        element: <MovieDetailPage />
-      }
+        path: "login",
+        element: <LoginPage />,
+      },
+      {
+        path: "signup",
+        element: <SignupPage />,
+      },
     ]
-  },
-]);
+  }
+];
+
+const protectedRoutes: RouteObject[] = [
+  {
+    path: "/",
+    element: <ProtectedLayout />,
+    children: [
+      {
+        path: "my",
+        element: <MyPage />,
+      },
+    ]
+  }
+];
+
+const router = createBrowserRouter([...publicRoutes, ...protectedRoutes]);
 
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
+  );
 }
 
 export default App;
