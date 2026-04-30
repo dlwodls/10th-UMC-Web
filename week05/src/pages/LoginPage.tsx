@@ -10,7 +10,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (accessToken) {
-      navigate('/');
+      navigate('/my');
     }
   }, [navigate, accessToken]);
 
@@ -26,7 +26,6 @@ const LoginPage = () => {
   const handleSubmit = async () => {
     try {
       await login(values);
-      navigate("/my");
     } catch {
       alert("로그인 실패");
     }
