@@ -8,3 +8,9 @@ export const OAUTH_QUERY_KEY = {
   accessToken: "accessToken",
   refreshToken: "refreshToken",
 };
+
+export const QUERY_KEY = {
+  lps: "lps",
+  lp: "lp",
+  myInfo: "myInfo",
+};

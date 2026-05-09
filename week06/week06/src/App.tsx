@@ -7,8 +7,11 @@ import HomeLayout from "./layouts/HomeLayout";
 import ProtectedLayout from "./layouts/ProtectedLayout";
 import MyPage from "./pages/MyPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import LpDetailPage from "./pages/LpDetailPage";
 import { AuthProvider } from "./context/AuthContext";
 import GoogleLoginRedirectPage from "./pages/GoogleLoginRedirectPage";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 // 1. 홈페이지
 // 2. 로그인 페이지
@@ -23,7 +26,7 @@ const publicRoutes: RouteObject[] = [
     children: [
       {
         index: true,
-        element: <HomePage />
+        element: <HomePage />,
       },
       {
         path: "login",
@@ -36,31 +39,42 @@ const publicRoutes: RouteObject[] = [
       {
         path: "v1/auth/google/callback",
         element: <GoogleLoginRedirectPage />,
-      }
-    ]
-  }
-];
-
-const protectedRoutes: RouteObject[] = [
-  {
-    path: "/",
-    element: <ProtectedLayout />,
-    children: [
-      {
-        path: "my",
-        element: <MyPage />,
       },
-    ]
-  }
+      {
+        path: "lp/:lpId",
+        element: <LpDetailPage />,
+      },
+      {
+        element: <ProtectedLayout />,
+        children: [
+          {
+            path: "my",
+            element: <MyPage />,
+          },
+        ],
+      },
+    ],
+  },
 ];
 
-const router = createBrowserRouter([...publicRoutes, ...protectedRoutes]);
+const router = createBrowserRouter([...publicRoutes]);
+
+export const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 3,
+    },
+  },
+});
 
 function App() {
   return (
-    <AuthProvider>
-      <RouterProvider router={router} />
-    </AuthProvider>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <RouterProvider router={router} />
+      </AuthProvider>
+      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+    </QueryClientProvider>
   );
 }
 

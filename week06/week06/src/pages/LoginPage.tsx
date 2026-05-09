@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import useForm from "../hooks/useForm.ts";
 import { type UserSigninInformation, validateSignin } from "../utils/validate.ts";
 import { useAuth } from "../context/AuthContext.tsx";
@@ -7,12 +7,14 @@ import { useAuth } from "../context/AuthContext.tsx";
 const LoginPage = () => {
   const { login, isAuthenticated, isAuthLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const from = (location.state as { from?: string })?.from ?? "/";
 
   useEffect(() => {
     if (!isAuthLoading && isAuthenticated) {
-      navigate("/my");
+      navigate(from, { replace: true });
     }
-  }, [navigate, isAuthenticated, isAuthLoading]);
+  }, [navigate, isAuthenticated, isAuthLoading, from]);
 
   const { values, error, touched, getInputProps } =
     useForm<UserSigninInformation>({

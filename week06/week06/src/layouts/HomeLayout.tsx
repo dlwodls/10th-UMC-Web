@@ -1,63 +1,25 @@
-import { Outlet, Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useState } from "react";
+import { Outlet } from "react-router-dom";
+import Navbar from "../components/Navbar";
+import Footer from "../components/Footer";
+import Sidebar from "../components/Sidebar";
 
 const HomeLayout = () => {
-  const { isAuthenticated, isAuthLoading, logout } = useAuth();
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate("/");
-  };
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   return (
     <div className="h-dvh flex flex-col">
-      <nav className="bg-white border-b border-gray-200 px-6 py-3 flex items-center justify-between shadow-sm">
-        <Link to="/" className="text-xl font-bold text-blue-500 tracking-tight">
-          MyApp
-        </Link>
-        {!isAuthLoading && (
-          <div className="flex items-center gap-3">
-            {isAuthenticated ? (
-              <>
-                <Link
-                  to="/my"
-                  className="text-sm text-gray-600 hover:text-blue-500 font-medium transition-colors"
-                >
-                  마이페이지
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="text-sm bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors cursor-pointer"
-                >
-                  로그아웃
-                </button>
-              </>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="text-sm text-gray-600 hover:text-blue-500 font-medium transition-colors"
-                >
-                  로그인
-                </Link>
-                <Link
-                  to="/signup"
-                  className="text-sm bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors"
-                >
-                  회원가입
-                </Link>
-              </>
-            )}
-          </div>
-        )}
-      </nav>
-      <main className="flex-1">
-        <Outlet />
-      </main>
-      <footer className="bg-white border-t border-gray-200 py-4 text-center text-sm text-gray-400">
-        © 2025 MyApp. All rights reserved.
-      </footer>
+      <Navbar onMenuClick={() => setIsSidebarOpen(true)} />
+      <div className="flex flex-1 overflow-hidden">
+        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+        <main className="flex-1 overflow-y-auto">
+          <Outlet />
+        </main>
+      </div>
+      <Footer />
+      <button className="fixed bottom-8 right-8 w-14 h-14 bg-blue-500 hover:bg-blue-600 text-white text-2xl rounded-full shadow-lg flex items-center justify-center transition-colors cursor-pointer z-50">
+        +
+      </button>
     </div>
   );
 };
