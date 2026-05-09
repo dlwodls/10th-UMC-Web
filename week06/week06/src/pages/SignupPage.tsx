@@ -1,8 +1,8 @@
 import z from "zod";
+import { Link, useNavigate } from "react-router-dom";
 import { useForm, type SubmitHandler } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { postSignup } from "../apis/auth";
-import { useNavigate } from "react-router-dom";
 
 const schema = z
   .object({
@@ -53,66 +53,55 @@ const SignupPage = () => {
     }
   };
 
+  const fields: {
+    name: keyof FormFields;
+    placeholder: string;
+    type: string;
+  }[] = [
+    { name: "email", placeholder: "이메일", type: "email" },
+    { name: "password", placeholder: "비밀번호", type: "password" },
+    { name: "passwordCheck", placeholder: "비밀번호 확인", type: "password" },
+    { name: "name", placeholder: "이름", type: "text" },
+  ];
+
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4">
-      <div className="flex flex-col gap-3">
-        <input
-          {...register("email")}
-          name="email"
-          className={`border border-[#ccc] w-[300px] p-[10px] focus:border-[#807bff] rounded-sm ${
-            errors.email ? "border-red-500 bg-red-200" : "border-gray-300"
-          }`}
-          type={"email"}
-          placeholder={"이메일"}
-        />
-        {errors.email && (
-          <div className="text-red-500 text-sm">{errors.email.message}</div>
-        )}
-        <input
-          {...register("password")}
-          className={`border border-[#ccc] w-[300px] p-[10px] focus:border-[#807bff] rounded-sm ${
-            errors.password ? "border-red-500 bg-red-200" : "border-gray-300"
-          }`}
-          type={"password"}
-          placeholder={"비밀번호"}
-        />
-        {errors.password && (
-          <div className="text-red-500 text-sm">{errors.password.message}</div>
-        )}
-        <input
-          {...register("passwordCheck")}
-          className={`border border-[#ccc] w-[300px] p-[10px] focus:border-[#807bff] rounded-sm ${
-            errors.passwordCheck
-              ? "border-red-500 bg-red-200"
-              : "border-gray-300"
-          }`}
-          type={"password"}
-          placeholder={"비밀번호 확인"}
-        />
-        {errors.passwordCheck && (
-          <div className="text-red-500 text-sm">
-            {errors.passwordCheck.message}
-          </div>
-        )}
-        <input
-          {...register("name")}
-          className={`border border-[#ccc] w-[300px] p-[10px] focus:border-[#807bff] rounded-sm ${
-            errors.name ? "border-red-500 bg-red-200" : "border-gray-300"
-          }`}
-          type={"text"}
-          placeholder={"이름"}
-        />
-        {errors.name && (
-          <div className="text-red-500 text-sm">{errors.name.message}</div>
-        )}
-        <button
-          type="button"
-          onClick={handleSubmit(onSubmit)}
-          disabled={isSubmitting}
-          className="w-full bg-blue-600 text-white py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition-colors cursor-pointer disabled:bg-gray-400"
-        >
-          회원가입
-        </button>
+    <div className="flex items-center justify-center h-full bg-gray-50">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 w-full max-w-sm">
+        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">회원가입</h1>
+
+        <div className="flex flex-col gap-3">
+          {fields.map(({ name, placeholder, type }) => (
+            <div key={name} className="flex flex-col gap-1">
+              <input
+                {...register(name)}
+                type={type}
+                placeholder={placeholder}
+                className={`w-full border px-4 py-3 rounded-md text-sm outline-none transition-colors focus:border-blue-500 ${
+                  errors[name] ? "border-red-400 bg-red-50" : "border-gray-300"
+                }`}
+              />
+              {errors[name] && (
+                <p className="text-red-500 text-xs">{errors[name]?.message}</p>
+              )}
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={handleSubmit(onSubmit)}
+            disabled={isSubmitting}
+            className="w-full bg-blue-500 text-white py-3 rounded-md text-sm font-medium hover:bg-blue-600 transition-colors cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed mt-1"
+          >
+            회원가입
+          </button>
+        </div>
+
+        <p className="text-center text-sm text-gray-500 mt-6">
+          이미 계정이 있으신가요?{" "}
+          <Link to="/login" className="text-blue-500 font-medium hover:underline">
+            로그인
+          </Link>
+        </p>
       </div>
     </div>
   );

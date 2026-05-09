@@ -1,8 +1,8 @@
 import { useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import useForm from "../hooks/useForm.ts";
 import { type UserSigninInformation, validateSignin } from "../utils/validate.ts";
 import { useAuth } from "../context/AuthContext.tsx";
-import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const { login, isAuthenticated, isAuthLoading } = useAuth();
@@ -37,61 +37,83 @@ const LoginPage = () => {
   };
 
   const isDisabled =
-    Object.values(error || {}).some((error: string) => error.length > 0) ||
+    Object.values(error || {}).some((e: string) => e.length > 0) ||
     Object.values(values).some((value) => value === "");
 
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-4">
-      <div className="flex flex-col gap-3">
-        <input
-          {...getInputProps("email")}
-          name="email"
-          className={`border border-[#ccc] w-[300px] p-[10px] focus:border-[#807bff] rounded-sm ${
-            error.email && touched.email
-              ? "border-red-500 bg-red-200"
-              : "border-gray-300"
-          }`}
-          type={"email"}
-          placeholder={"이메일"}
-        />
-        {error.email && touched.email && (
-          <div className="text-red-500 text-sm">{error.email}</div>
-        )}
-        <input
-          {...getInputProps("password")}
-          className={`border border-[#ccc] w-[300px] p-[10px] focus:border-[#807bff] rounded-sm ${
-            error.password && touched.password
-              ? "border-red-500 bg-red-200"
-              : "border-gray-300"
-          }`}
-          type={"password"}
-          placeholder={"비밀번호"}
-        />
-        {error.password && touched.password && (
-          <div className="text-red-500 text-sm">{error.password}</div>
-        )}
-        <button
-          type="button"
-          onClick={handleSubmit}
-          disabled={isDisabled}
-          className="w-full bg-blue-600 text-white py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition-colors cursor-pointer disabled:bg-gray-400"
-        >
-          로그인
-        </button>
-        <button
-          type="button"
-          onClick={handleGoogleLogin}
-          className="w-full bg-blue-600 text-white py-3 rounded-md text-lg font-medium hover:bg-blue-700 transition-colors cursor-pointer disabled:bg-gray-400"
-        >
-          <div className="flex items-center justify-center gap-4">
+    <div className="flex items-center justify-center h-full bg-gray-50">
+      <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-8 w-full max-w-sm">
+        <h1 className="text-2xl font-bold text-gray-900 mb-6 text-center">로그인</h1>
+
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-1">
+            <input
+              {...getInputProps("email")}
+              name="email"
+              type="email"
+              placeholder="이메일"
+              className={`w-full border px-4 py-3 rounded-md text-sm outline-none transition-colors focus:border-blue-500 ${
+                error.email && touched.email
+                  ? "border-red-400 bg-red-50"
+                  : "border-gray-300"
+              }`}
+            />
+            {error.email && touched.email && (
+              <p className="text-red-500 text-xs">{error.email}</p>
+            )}
+          </div>
+
+          <div className="flex flex-col gap-1">
+            <input
+              {...getInputProps("password")}
+              type="password"
+              placeholder="비밀번호"
+              className={`w-full border px-4 py-3 rounded-md text-sm outline-none transition-colors focus:border-blue-500 ${
+                error.password && touched.password
+                  ? "border-red-400 bg-red-50"
+                  : "border-gray-300"
+              }`}
+            />
+            {error.password && touched.password && (
+              <p className="text-red-500 text-xs">{error.password}</p>
+            )}
+          </div>
+
+          <button
+            type="button"
+            onClick={handleSubmit}
+            disabled={isDisabled}
+            className="w-full bg-blue-500 text-white py-3 rounded-md text-sm font-medium hover:bg-blue-600 transition-colors cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed mt-1"
+          >
+            로그인
+          </button>
+
+          <div className="relative flex items-center my-1">
+            <div className="flex-1 border-t border-gray-200" />
+            <span className="px-3 text-xs text-gray-400">또는</span>
+            <div className="flex-1 border-t border-gray-200" />
+          </div>
+
+          <button
+            type="button"
+            onClick={handleGoogleLogin}
+            className="w-full flex items-center justify-center gap-3 border border-gray-300 py-3 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors cursor-pointer"
+          >
             <img
               src="/images/google.webp"
-              alt="Google Logo Image"
-              className="w-8 h-8 object-contain"
+              alt="Google"
+              className="w-5 h-5 object-contain"
             />
-            <span>구글 로그인</span>
-          </div>
-        </button>
+            구글로 로그인
+          </button>
+        </div>
+
+        <p className="text-center text-sm text-gray-500 mt-6">
+          계정이 없으신가요?{" "}
+          <Link to="/signup" className="text-blue-500 font-medium hover:underline">
+            회원가입
+          </Link>
+        </p>
       </div>
     </div>
   );
