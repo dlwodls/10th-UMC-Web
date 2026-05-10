@@ -1,7 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate, useParams, useLocation } from "react-router-dom";
 import useGetLp from "../hooks/queries/useGetLp";
+import useGetInfiniteCommentList from "../hooks/queries/useGetInfiniteCommentList";
+import usePostComment from "../hooks/mutations/usePostComment";
 import { useAuth } from "../context/AuthContext";
+import { PAGINATION_ORDER } from "../enums/common";
+import CommentSkeleton from "../components/CommentCard/CommentSkeleton";
 
 const LpDetailPage = () => {
   const { lpId } = useParams<{ lpId: string }>();
@@ -10,6 +14,48 @@ const LpDetailPage = () => {
   const location = useLocation();
   const { data, isPending, isError } = useGetLp(Number(lpId));
   const [isLiked, setIsLiked] = useState(false);
+  const [order, setOrder] = useState<PAGINATION_ORDER>(PAGINATION_ORDER.desc);
+  const [commentInput, setCommentInput] = useState("");
+  const [commentTouched, setCommentTouched] = useState(false);
+
+  const { mutate: submitComment, isPending: isSubmitting } = usePostComment(Number(lpId));
+
+  const handleCommentSubmit = () => {
+    if (commentInput.trim().length === 0) return;
+    submitComment(commentInput.trim(), {
+      onSuccess: () => {
+        setCommentInput("");
+        setCommentTouched(false);
+      },
+    });
+  };
+
+  const {
+    data: comments,
+    isFetching: isCommentFetching,
+    isPending: isCommentPending,
+    hasNextPage,
+    fetchNextPage,
+  } = useGetInfiniteCommentList(Number(lpId), order);
+
+  const bottomRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isCommentFetching) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0 },
+    );
+
+    const el = bottomRef.current;
+    if (el) observer.observe(el);
+    return () => {
+      if (el) observer.unobserve(el);
+    };
+  }, [hasNextPage, isCommentFetching, fetchNextPage]);
 
   if (isPending) {
     return (
@@ -121,6 +167,116 @@ const LpDetailPage = () => {
             {likeCount}
           </span>
         </button>
+      </div>
+      {/* 댓글 영역 */}
+      <div className="w-[1000px] flex flex-col gap-4">
+        {/* 정렬 토글 */}
+        <div className="flex items-center justify-between">
+          <span className="text-sm font-semibold text-gray-700">댓글</span>
+          <div className="flex border border-gray-300 rounded-md overflow-hidden text-sm">
+            <button
+              onClick={() => setOrder(PAGINATION_ORDER.desc)}
+              className={`px-3 py-1.5 transition-colors cursor-pointer ${
+                order === PAGINATION_ORDER.desc
+                  ? "bg-blue-500 text-white"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              최신순
+            </button>
+            <button
+              onClick={() => setOrder(PAGINATION_ORDER.asc)}
+              className={`px-3 py-1.5 border-l border-gray-300 transition-colors cursor-pointer ${
+                order === PAGINATION_ORDER.asc
+                  ? "bg-blue-500 text-white"
+                  : "text-gray-600 hover:bg-gray-100"
+              }`}
+            >
+              오래된순
+            </button>
+          </div>
+        </div>
+
+        {/* 댓글 작성란 */}
+        <div className="bg-white rounded-xl shadow-sm px-5 py-3 flex flex-col gap-1.5">
+          <div className="flex items-center gap-3">
+            <textarea
+              value={commentInput}
+              onChange={(e) => setCommentInput(e.target.value)}
+              onBlur={() => setCommentTouched(true)}
+              placeholder="댓글을 입력해주세요."
+              rows={1}
+              className={`flex-1 resize-none border rounded-lg px-4 py-2 text-sm text-gray-700 outline-none transition-colors focus:border-blue-400 leading-6 ${
+                commentTouched && commentInput.trim().length === 0
+                  ? "border-red-400 bg-red-50"
+                  : "border-gray-300"
+              }`}
+            />
+            <button
+              onClick={handleCommentSubmit}
+              disabled={commentInput.trim().length === 0 || isSubmitting}
+              className="shrink-0 bg-blue-500 hover:bg-blue-600 text-white text-sm font-medium px-5 py-2 rounded-lg transition-colors cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? "등록 중..." : "등록"}
+            </button>
+          </div>
+          <div className="text-xs min-h-4 px-1">
+            {commentTouched && commentInput.trim().length === 0 ? (
+              <span className="text-red-400">댓글 내용을 입력해주세요.</span>
+            ) : commentInput.trim().length > 0 ? (
+              <span className="text-gray-400">{commentInput.trim().length}자</span>
+            ) : null}
+          </div>
+        </div>
+
+        {/* 댓글 아이템 */}
+        {isCommentPending
+          ? Array.from({ length: 4 }).map((_, i) => <CommentSkeleton key={i} />)
+          : comments?.pages
+              ?.flatMap((page) => page.data.data)
+              .map((comment) => (
+            <div
+              key={comment.id}
+              className="bg-white rounded-xl shadow-sm px-5 py-4 flex items-start gap-3"
+            >
+              <div className="shrink-0 w-9 h-9 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
+                {comment.author?.profileImage ? (
+                  <img
+                    src={comment.author.profileImage}
+                    alt={comment.author.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <svg
+                    className="w-5 h-5 text-gray-400"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z" />
+                  </svg>
+                )}
+              </div>
+              <div className="flex flex-col gap-1 flex-1">
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-semibold text-gray-800">
+                    {comment.author?.name ?? "알 수 없음"}
+                  </span>
+                  <span className="text-xs text-gray-400">
+                    {new Date(comment.createdAt).toLocaleDateString("ko-KR")}
+                  </span>
+                </div>
+                <p className="text-sm text-gray-600 leading-relaxed">
+                  {comment.content}
+                </p>
+              </div>
+            </div>
+          ))}
+        {isCommentFetching && !isCommentPending &&
+          Array.from({ length: 2 }).map((_, i) => (
+            <CommentSkeleton key={`more-${i}`} />
+          ))}
+
+        <div ref={bottomRef} className="h-2" />
       </div>
     </div>
   );
