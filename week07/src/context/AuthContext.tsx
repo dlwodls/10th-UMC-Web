@@ -1,4 +1,3 @@
-import type { RequestSigninDto } from "../types/auth.ts";
 import {
   createContext,
   useState,
@@ -8,15 +7,15 @@ import {
 } from "react";
 import { useLocalStorage } from "../hooks/useLocalStorage";
 import { LOCAL_STORAGE_KEY } from "../constants/key";
-import { postSignin, postLogout, postRefresh } from "../apis/auth";
+import { postLogout, postRefresh } from "../apis/auth";
 
 interface AuthContextType {
   accessToken: string | null;
   refreshToken: string | null;
   isAuthenticated: boolean;
   isAuthLoading: boolean;
-  login: (signInData: RequestSigninDto) => Promise<void>;
   logout: () => Promise<void>;
+  clearAuth: () => void;
   setAuthTokens: (accessToken: string, refreshToken: string) => void;
 }
 
@@ -25,8 +24,8 @@ export const AuthContext = createContext<AuthContextType>({
   refreshToken: null,
   isAuthenticated: false,
   isAuthLoading: true,
-  login: async () => {},
   logout: async () => {},
+  clearAuth: () => {},
   setAuthTokens: () => {},
 });
 
@@ -90,18 +89,12 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     setIsAuthenticated(true);
   };
 
-  const login = async (signinData: RequestSigninDto) => {
-    try {
-      const { data } = await postSignin(signinData);
-
-      if (data) {
-        setAuthTokens(data.accessToken, data.refreshToken);
-        alert("로그인 성공");
-      }
-    } catch (error) {
-      console.error("로그인 오류", error);
-      alert("로그인 실패");
-    }
+  const clearAuth = () => {
+    removeAccessTokenFromStorage();
+    removeRefreshTokenFromStorage();
+    setAccessToken(null);
+    setRefreshToken(null);
+    setIsAuthenticated(false);
   };
 
   const logout = async () => {
@@ -110,12 +103,7 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
     } catch (error) {
       console.error("로그아웃 오류", error);
     } finally {
-      removeAccessTokenFromStorage();
-      removeRefreshTokenFromStorage();
-      setAccessToken(null);
-      setRefreshToken(null);
-      setIsAuthenticated(false);
-      alert("로그아웃 성공");
+      clearAuth();
     }
   };
 
@@ -126,8 +114,8 @@ export const AuthProvider = ({ children }: PropsWithChildren) => {
         refreshToken,
         isAuthenticated,
         isAuthLoading,
-        login,
         logout,
+        clearAuth,
         setAuthTokens,
       }}
     >

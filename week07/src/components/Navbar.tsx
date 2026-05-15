@@ -1,20 +1,16 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import useGetMyInfo from "../hooks/queries/useGetMyInfo";
+import useLogout from "../hooks/mutations/useLogout";
 
 type NavbarProps = {
   onMenuClick: () => void;
 };
 
 const Navbar = ({ onMenuClick }: NavbarProps) => {
-  const { isAuthenticated, isAuthLoading, logout } = useAuth();
-  const navigate = useNavigate();
+  const { isAuthenticated, isAuthLoading } = useAuth();
   const { data: myInfo } = useGetMyInfo(isAuthenticated);
-
-  const handleLogout = async () => {
-    await logout();
-    navigate("/");
-  };
+  const { mutate: logout, isPending: isLoggingOut } = useLogout();
 
   return (
     <nav className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm">
@@ -44,10 +40,11 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
                   : "마이페이지"}
               </Link>
               <button
-                onClick={handleLogout}
-                className="text-sm bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors cursor-pointer"
+                onClick={() => logout()}
+                disabled={isLoggingOut}
+                className="text-sm bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                로그아웃
+                {isLoggingOut ? "로그아웃 중..." : "로그아웃"}
               </button>
             </>
           ) : (

@@ -31,6 +31,13 @@ export type ResponseSigninDto = CommonResponse<{
   refreshToken: string;
 }>;
 
+// 내 정보 수정
+export type RequestUpdateMyInfoDto = {
+  name: string;
+  bio?: string;
+  avatar?: File | null;
+};
+
 // 내 정보 조회
 export type ResponseMyInfoDto = CommonResponse<{
   id: number;

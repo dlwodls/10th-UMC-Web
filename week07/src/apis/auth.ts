@@ -1,6 +1,7 @@
 import type {
   RequestSignupDto,
   RequestSigninDto,
+  RequestUpdateMyInfoDto,
   ResponseMyInfoDto,
   ResponseSignupDto,
   ResponseSigninDto,
@@ -40,4 +41,30 @@ export const postLogout = async () => {
   const { data } = await axiosInstance.post("/v1/auth/signout");
 
   return data;
-}
+};
+
+export const deleteAccount = async (): Promise<void> => {
+  await axiosInstance.delete("/v1/users");
+};
+
+export const patchMyInfo = async (
+  dto: RequestUpdateMyInfoDto,
+): Promise<ResponseMyInfoDto> => {
+  if (dto.avatar instanceof File) {
+    const formData = new FormData();
+    formData.append("name", dto.name);
+    if (dto.bio) formData.append("bio", dto.bio);
+    formData.append("avatar", dto.avatar);
+
+    const { data } = await axiosInstance.patch("/v1/users", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    });
+    return data;
+  }
+
+  const { data } = await axiosInstance.patch("/v1/users", {
+    name: dto.name,
+    bio: dto.bio,
+  });
+  return data;
+};

@@ -1,11 +1,13 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import useForm from "../hooks/useForm.ts";
 import { type UserSigninInformation, validateSignin } from "../utils/validate.ts";
 import { useAuth } from "../context/AuthContext.tsx";
+import useLogin from "../hooks/mutations/useLogin.ts";
 
 const LoginPage = () => {
-  const { login, isAuthenticated, isAuthLoading } = useAuth();
+  const { isAuthenticated, isAuthLoading } = useAuth();
+  const { mutateAsync: login, isPending: isLoggingIn } = useLogin();
   const navigate = useNavigate();
   const location = useLocation();
   const from = (location.state as { from?: string })?.from ?? "/";
@@ -25,11 +27,21 @@ const LoginPage = () => {
       validate: validateSignin,
     });
 
+  const [loginError, setLoginError] = useState("");
+
+  const isDisabled =
+    Object.values(error || {}).some((e: string) => e.length > 0) ||
+    Object.values(values).some((value) => value === "");
+
+  const isDisabledSubmit = isDisabled || isLoggingIn;
+
   const handleSubmit = async () => {
     try {
+      setLoginError("");
       await login(values);
+      navigate(from, { replace: true });
     } catch {
-      alert("로그인 실패");
+      setLoginError("이메일 또는 비밀번호가 올바르지 않습니다.");
     }
   };
 
@@ -37,10 +49,6 @@ const LoginPage = () => {
     window.location.href =
       import.meta.env.VITE_SERVER_API_URL + "/v1/auth/google/login";
   };
-
-  const isDisabled =
-    Object.values(error || {}).some((e: string) => e.length > 0) ||
-    Object.values(values).some((value) => value === "");
 
   return (
     <div className="flex items-center justify-center h-full bg-gray-50">
@@ -81,13 +89,17 @@ const LoginPage = () => {
             )}
           </div>
 
+          {loginError && (
+            <p className="text-red-500 text-sm text-center -mb-1">{loginError}</p>
+          )}
+
           <button
             type="button"
             onClick={handleSubmit}
-            disabled={isDisabled}
+            disabled={isDisabledSubmit}
             className="w-full bg-blue-500 text-white py-3 rounded-md text-sm font-medium hover:bg-blue-600 transition-colors cursor-pointer disabled:bg-gray-300 disabled:cursor-not-allowed mt-1"
           >
-            로그인
+            {isLoggingIn ? "로그인 중..." : "로그인"}
           </button>
 
           <div className="relative flex items-center my-1">

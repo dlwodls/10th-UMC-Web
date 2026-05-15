@@ -1,5 +1,7 @@
-import { Link, useLocation } from "react-router-dom";
+import { useState } from "react";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import useDeleteAccount from "../hooks/mutations/useDeleteAccount";
 
 type SidebarProps = {
   isOpen: boolean;
@@ -7,8 +9,12 @@ type SidebarProps = {
 };
 
 const SidebarNav = ({ onClose }: { onClose?: () => void }) => {
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, logout } = useAuth();
+  const { mutate: deleteAccount, isPending: isDeleting } = useDeleteAccount();
   const { pathname } = useLocation();
+  const navigate = useNavigate();
+
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const linkClass = (path: string) =>
     `px-3 py-2 rounded-md text-sm font-medium transition-colors ${
@@ -17,26 +23,78 @@ const SidebarNav = ({ onClose }: { onClose?: () => void }) => {
         : "text-gray-600 hover:bg-gray-100"
     }`;
 
+  const handleDeleteConfirm = () => {
+    deleteAccount(undefined, {
+      onSuccess: async () => {
+        await logout();
+        navigate("/login", { replace: true });
+      },
+    });
+  };
+
   return (
-    <nav className="flex flex-col gap-1 p-3" onClick={onClose}>
-      <Link to="/" className={linkClass("/")}>
-        홈
-      </Link>
-      {isAuthenticated ? (
-        <Link to="/my" className={linkClass("/my")}>
-          마이페이지
-        </Link>
-      ) : (
-        <>
-          <Link to="/login" className={linkClass("/login")}>
-            로그인
-          </Link>
-          <Link to="/signup" className={linkClass("/signup")}>
-            회원가입
-          </Link>
-        </>
+    <>
+      {/* 탈퇴 확인 모달 */}
+      {showConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl px-8 py-6 flex flex-col items-center gap-4 w-80">
+            <h2 className="text-lg font-bold text-gray-900 text-center">정말 탈퇴하시겠습니까?</h2>
+            <p className="text-sm text-gray-500 text-center">
+              탈퇴 시 모든 데이터가 삭제되며 복구할 수 없습니다.
+            </p>
+            <div className="flex gap-3 w-full">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="flex-1 border border-gray-300 text-gray-600 py-2.5 rounded-md text-sm font-medium hover:bg-gray-50 transition-colors cursor-pointer"
+              >
+                아니오
+              </button>
+              <button
+                onClick={handleDeleteConfirm}
+                disabled={isDeleting}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white py-2.5 rounded-md text-sm font-medium transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isDeleting ? "처리 중..." : "예"}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
-    </nav>
+
+      <nav className="flex flex-col gap-1 p-3 flex-1" onClick={onClose}>
+        <Link to="/" className={linkClass("/")}>
+          홈
+        </Link>
+        {isAuthenticated ? (
+          <Link to="/my" className={linkClass("/my")}>
+            마이페이지
+          </Link>
+        ) : (
+          <>
+            <Link to="/login" className={linkClass("/login")}>
+              로그인
+            </Link>
+            <Link to="/signup" className={linkClass("/signup")}>
+              회원가입
+            </Link>
+          </>
+        )}
+      </nav>
+
+      {isAuthenticated && (
+        <div className="p-3 border-t border-gray-100">
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowConfirm(true);
+            }}
+            className="w-full px-3 py-2 rounded-md text-sm font-medium text-red-500 hover:bg-red-50 transition-colors cursor-pointer text-center"
+          >
+            탈퇴하기
+          </button>
+        </div>
+      )}
+    </>
   );
 };
 

@@ -71,6 +71,12 @@ axiosInstance.interceptors.response.use(
         return Promise.reject(error);
       }
 
+      // refresh 토큰이 없으면 재시도 없이 바로 reject (로그인 실패 등)
+      const refreshToken = getStorageItem(LOCAL_STORAGE_KEY.refreshToken);
+      if (!refreshToken) {
+        return Promise.reject(error);
+      }
+
       // 재시도 플래그 설정
       originalRequest._retry = true;
 

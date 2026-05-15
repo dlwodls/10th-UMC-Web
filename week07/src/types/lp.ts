@@ -41,6 +41,22 @@ export type RequestLpDto = {
   lpId: number;
 };
 
+export type RequestCreateLpDto = {
+  title: string;
+  content: string;
+  thumbnail?: string;
+  tags: string[];
+  published: boolean;
+};
+
+export type RequestUpdateLpDto = {
+  title?: string;
+  content?: string;
+  thumbnail?: string;
+  tags?: string[];
+  published?: boolean;
+};
+
 export type ResponseLpDto = CommonResponse<LpDto>;
 
 export type ResponseLpListDto = CursorBasedResponse<Lp[]>;
