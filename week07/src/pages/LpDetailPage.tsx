@@ -370,7 +370,7 @@ const LpDetailPage = () => {
 
         {/* 좋아요 버튼 */}
         <button
-          onClick={() => toggleLike(isLiked)}
+          onClick={() => toggleLike({ isLiked, userId: myInfo?.data?.id ?? 0 })}
           disabled={isLikeLoading}
           className="absolute bottom-6 flex flex-col items-center gap-1 cursor-pointer group disabled:opacity-50"
         >
