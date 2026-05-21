@@ -15,7 +15,7 @@ const Navbar = ({ onMenuClick }: NavbarProps) => {
   return (
     <nav className="bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shadow-sm">
       <button
-        className="md:hidden p-1 rounded-md text-gray-500 hover:bg-gray-100 transition-colors cursor-pointer"
+        className="p-1 rounded-md text-gray-500 hover:bg-gray-100 transition-colors cursor-pointer"
         onClick={onMenuClick}
       >
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

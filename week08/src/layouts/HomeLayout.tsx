@@ -4,17 +4,18 @@ import Navbar from "../components/Navbar";
 import Footer from "../components/Footer";
 import Sidebar from "../components/Sidebar";
 import LpFormModal from "../components/LpFormModal";
+import { useSidebar } from "../hooks/useSidebar";
 
 const HomeLayout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { isOpen, toggle, close } = useSidebar();
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   return (
     <div className="h-dvh flex flex-col">
-      <Navbar onMenuClick={() => setIsSidebarOpen(true)} />
+      <Navbar onMenuClick={toggle} />
       <div className="flex flex-1 overflow-hidden">
-        <Sidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
-        <main className="flex-1 overflow-y-auto">
+        <Sidebar isOpen={isOpen} onClose={close} />
+        <main className={`flex-1 ${isOpen ? "overflow-hidden md:overflow-y-auto" : "overflow-y-auto"}`}>
           <Outlet />
         </main>
       </div>

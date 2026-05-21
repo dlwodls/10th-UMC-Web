@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import useDeleteAccount from "../hooks/mutations/useDeleteAccount";
@@ -99,6 +99,19 @@ const SidebarNav = ({ onClose }: { onClose?: () => void }) => {
 };
 
 const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        onClose();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+
+    // 클린업: 컴포넌트 언마운트 또는 의존성 변경 시 이벤트 리스너 해제 → 메모리 누수 방지
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   return (
     <>
       {/* 모바일 오버레이 사이드바 */}
@@ -119,7 +132,11 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
       </div>
 
       {/* 데스크탑 사이드바 */}
-      <aside className="hidden md:flex flex-col w-56 shrink-0 border-r border-gray-200 bg-white">
+      <aside
+        className={`hidden md:flex flex-col shrink-0 border-r border-gray-200 bg-white overflow-hidden transition-[width] duration-300 ${
+          isOpen ? "w-56" : "w-0"
+        }`}
+      >
         <SidebarNav />
       </aside>
     </>
