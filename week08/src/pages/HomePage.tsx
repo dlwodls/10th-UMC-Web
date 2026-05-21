@@ -6,10 +6,13 @@ import LpCardSkeleton from "../components/LpCard/LpCardSkeleton";
 import { PAGINATION_ORDER } from "../enums/common";
 import useGetInfiniteLpList from "../hooks/queries/useGetInfiniteLpList";
 import { useInView } from "react-intersection-observer";
+import useDebounce from "../hooks/useDebounce";
+import { SEARCH_DEBOUNCE_DELAY } from "../constants/delay";
 
 const HomePage = () => {
   const { isAuthenticated } = useAuth();
   const [search, setSearch] = useState("");
+  const debouncedQuery = useDebounce(search, SEARCH_DEBOUNCE_DELAY);
   const [order, setOrder] = useState<PAGINATION_ORDER>(PAGINATION_ORDER.desc);
 
   const {
@@ -19,7 +22,7 @@ const HomePage = () => {
     isPending,
     fetchNextPage,
     isError,
-  } = useGetInfiniteLpList(10, search, order);
+  } = useGetInfiniteLpList(10, debouncedQuery, order);
 
   const { ref, inView } = useInView({
     threshold: 0,
@@ -117,7 +120,8 @@ const HomePage = () => {
                 ?.map((page) => page.data.data)
                 ?.flat()
                 ?.map((lp) => <LpCard key={lp.id} lp={lp} />)}
-          {isFetching && !isPending &&
+          {isFetching &&
+            !isPending &&
             Array.from({ length: 3 }).map((_, i) => (
               <LpCardSkeleton key={`more-${i}`} />
             ))}

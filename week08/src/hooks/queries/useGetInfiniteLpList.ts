@@ -16,6 +16,8 @@ function useGetInfiniteLpList(
     getNextPageParam: (lastPage) => {
       return lastPage.data.hasNext ? lastPage.data.nextCursor : undefined;
     },
+    staleTime: 1000 * 60 * 1,
+    gcTime: 1000 * 60 * 5,
   });
 }
 
