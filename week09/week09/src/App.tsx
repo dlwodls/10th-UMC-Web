@@ -3,7 +3,8 @@ import Navbar from "./components/Navbar";
 import CartList from "./components/CartList";
 import CartTotals from "./components/CartTotals";
 import Footer from "./components/Footer";
-import { calculateTotals } from "./slices/cartSlice";
+import Modal from "./components/Modal";
+import { calculateTotals } from "./features/cart/cartSlice";
 import { useAppDispatch, useAppSelector } from "./hooks/useCartDispatch";
 
 function App() {
@@ -38,6 +39,9 @@ function App() {
 
       {/* 푸터 - 전체 삭제 버튼 중앙 배치 */}
       <Footer />
+
+      {/* 확인 모달 - isOpen이 true일 때만 렌더링 */}
+      <Modal />
     </div>
   );
 }
