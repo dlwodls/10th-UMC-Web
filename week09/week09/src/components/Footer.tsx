@@ -1,14 +1,13 @@
-import { useAppDispatch } from "../hooks/useCartDispatch";
-import { openModal } from "../features/modal/modalSlice";
+import { usePlaylistStore } from "../store/usePlaylistStore";
 
 function Footer() {
-  const dispatch = useAppDispatch();
+  const { openModal } = usePlaylistStore();
 
   return (
     <footer className="border-t border-gray-100 bg-white">
       <div className="max-w-2xl mx-auto px-4 pt-4 pb-8 flex justify-center">
         <button
-          onClick={() => dispatch(openModal())}
+          onClick={openModal}
           className="px-6 py-2.5 rounded-xl bg-red-50 text-red-500 text-sm font-semibold
                      hover:bg-red-100 active:scale-95 transition-all border border-red-100"
         >

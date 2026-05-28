@@ -1,7 +1,7 @@
-import { useAppSelector } from '../hooks/useCartDispatch';
+import { usePlaylistStore } from '../store/usePlaylistStore';
 
 function Navbar() {
-  const { amount } = useAppSelector((state) => state.cart);
+  const { amount } = usePlaylistStore();
 
   return (
     <nav className="sticky top-0 z-50 bg-white border-b border-gray-100 shadow-sm">

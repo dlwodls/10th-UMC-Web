@@ -1,13 +1,12 @@
 import type { CartItemType } from "../constants/cartItems";
-import { increase, decrease, removeItem } from "../features/cart/cartSlice";
-import { useAppDispatch } from "../hooks/useCartDispatch";
+import { usePlaylistStore } from "../store/usePlaylistStore";
 
 interface CartItemProps {
   item: CartItemType;
 }
 
 function CartItem({ item }: CartItemProps) {
-  const dispatch = useAppDispatch();
+  const { increase, decrease, removeItem } = usePlaylistStore();
 
   return (
     <div className="flex items-center gap-4 bg-white rounded-2xl shadow-sm p-4 border border-gray-100">
@@ -33,7 +32,7 @@ function CartItem({ item }: CartItemProps) {
       <div className="flex flex-col items-center gap-2 shrink-0">
         {/* 수량 증가 버튼 */}
         <button
-          onClick={() => dispatch(increase(item.id))}
+          onClick={() => increase(item.id)}
           className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold text-lg
                      hover:bg-indigo-200 active:scale-95 transition-all flex items-center justify-center"
         >
@@ -47,7 +46,7 @@ function CartItem({ item }: CartItemProps) {
 
         {/* 수량 감소 버튼 */}
         <button
-          onClick={() => dispatch(decrease(item.id))}
+          onClick={() => decrease(item.id)}
           className="w-8 h-8 rounded-full bg-indigo-100 text-indigo-700 font-bold text-lg
                      hover:bg-indigo-200 active:scale-95 transition-all flex items-center justify-center"
         >
@@ -56,7 +55,7 @@ function CartItem({ item }: CartItemProps) {
 
         {/* 개별 삭제 버튼 */}
         <button
-          onClick={() => dispatch(removeItem(item.id))}
+          onClick={() => removeItem(item.id)}
           className="text-xs text-gray-400 hover:text-red-500 transition-colors mt-1"
         >
           삭제

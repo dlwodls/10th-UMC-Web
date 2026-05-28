@@ -1,8 +1,8 @@
-import { useAppSelector } from '../hooks/useCartDispatch';
+import { usePlaylistStore } from '../store/usePlaylistStore';
 import CartItem from './CartItem';
 
 function CartList() {
-  const cartItems = useAppSelector((state) => state.cart.cartItems);
+  const { cartItems } = usePlaylistStore();
 
   // 장바구니가 비어있을 때
   if (cartItems.length === 0) {

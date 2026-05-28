@@ -4,16 +4,14 @@ import CartList from "./components/CartList";
 import CartTotals from "./components/CartTotals";
 import Footer from "./components/Footer";
 import Modal from "./components/Modal";
-import { calculateTotals } from "./features/cart/cartSlice";
-import { useAppDispatch, useAppSelector } from "./hooks/useCartDispatch";
+import { usePlaylistStore } from "./store/usePlaylistStore";
 
 function App() {
-  const dispatch = useAppDispatch();
-  const cartItems = useAppSelector((state) => state.cart.cartItems);
+  const { cartItems, calculateTotals } = usePlaylistStore();
 
   useEffect(() => {
-    dispatch(calculateTotals());
-  }, [cartItems, dispatch]);
+    calculateTotals();
+  }, [cartItems]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-white to-purple-50">

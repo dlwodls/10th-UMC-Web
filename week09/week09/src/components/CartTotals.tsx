@@ -1,7 +1,7 @@
-import { useAppSelector } from '../hooks/useCartDispatch';
+import { usePlaylistStore } from '../store/usePlaylistStore';
 
 function CartTotals() {
-  const { amount, total } = useAppSelector((state) => state.cart);
+  const { amount, total } = usePlaylistStore();
 
   return (
     <div className="mt-6 bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
